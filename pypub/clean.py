@@ -23,10 +23,16 @@ def create_html_from_fragment(tag):
         assert isinstance(tag, bs4.element.Tag)
     except AssertionError:
         raise TypeError
-    try:
-        assert tag.find_all('body') == []
-    except AssertionError:
-        raise ValueError
+
+    #try:
+    #    print('hole tag:')
+    #    print(tag.find_all('body'))
+    # hole: this is wrong bcoz who browser will auto replace first </html>(if only 2 </html>) with <html>, while <body> still appear.
+    #    assert tag.find_all('body') == []
+    #except AssertionError:
+    #    raise ValueError
+    for root_tag in ('<html>', '</html>', '<body>', '</body>', '<head>', '</head>'):
+        tag.text.replace(root_tag, '')
 
     soup = BeautifulSoup('<html><head></head><body></body></html>', 'html.parser')
     soup.body.append(tag)
