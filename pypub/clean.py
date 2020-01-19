@@ -25,17 +25,18 @@ def create_html_from_fragment(tag):
         raise TypeError
 
     #try:
-    #    print('hole tag:')
-    #    print(tag.find_all('body'))
-    # hole: this is wrong bcoz who browser will auto replace first </html>(if only 2 </html>) with <html>, while <body> still appear.
+    #    # hole: this is wrong bcoz web browser will auto replace first </html>(if only 2 </html>) with <html>, while <body> still appear.
+    #e.g. http://slae.tehwinsam.com/7/assignment7.html
     #    assert tag.find_all('body') == []
     #except AssertionError:
     #    raise ValueError
-    for root_tag in ('<html>', '</html>', '<body>', '</body>', '<head>', '</head>'):
-        tag.text.replace(root_tag, '')
+    if tag.find_all('body') == []:
+        soup = BeautifulSoup('<html><head></head><body></body></html>', 'html.parser')
+        soup.body.append(tag)
+    else:
+        soup = BeautifulSoup('<html></html>', 'html.parser')
+        soup.html.append(tag)
 
-    soup = BeautifulSoup('<html><head></head><body></body></html>', 'html.parser')
-    soup.body.append(tag)
     return soup
 
 
