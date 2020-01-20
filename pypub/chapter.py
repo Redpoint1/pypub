@@ -30,8 +30,9 @@ class ImageErrorException(Exception):
 
 
 def get_image_type(url):
-    for ending in ['jpg', 'jpeg', '.gif', '.png']:
-        if url.endswith(ending):
+    url = url.lower()
+    for ending in ['.jpg', '.jpeg', '.gif', '.png', '.bmp']:
+        if url.endswith(ending) or ((ending + '?') in url):
             return ending
     else:
         try:
@@ -200,6 +201,20 @@ class Chapter(object):
         unformatted_html_unicode_string = unformatted_html_unicode_string.replace('<br>', '<br/>')
         self.content = unformatted_html_unicode_string
 
+import re
+def hole_meta_encoding(soup):
+    if soup and soup.meta:
+        encod = soup.meta.get('charset')
+        if encod == None:
+            encod = soup.meta.get('content-type')
+            if encod == None:
+                content = soup.meta.get('content')
+                match = re.search('charset=(.*)', content)
+                if match:
+                    encod = match.group(1)
+                else:
+                    return None #raise ValueError('unable to find encoding')
+        return encod
 
 class ChapterFactory(object):
     """
@@ -214,7 +229,8 @@ class ChapterFactory(object):
 
     def __init__(self, clean_function=clean.clean):
         self.clean_function = clean_function
-        user_agent = r'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0'
+        #UA causes too old web browser page, e.g. https://huanlan.zhihu.com/p/12345
+        user_agent = r'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/1000000.0'
         self.request_headers = {'User-Agent': user_agent}
 
     def create_chapter_from_url(self, url, title=None):
@@ -245,8 +261,8 @@ class ChapterFactory(object):
             raise ValueError("%s is an invalid url or no network connection" % url)
         except requests.exceptions.SSLError:
             raise ValueError("Url %s doesn't have valid SSL certificate" % url)
-        unicode_string = request_object.text
-        return self.create_chapter_from_string(unicode_string, url, title)
+        #unicode_string = request_object.text
+        return self.create_chapter_from_string(None, url, title, request_object=request_object)
 
     def create_chapter_from_file(self, file_name, url=None, title=None):
         """
@@ -270,7 +286,7 @@ class ChapterFactory(object):
             content_string = f.read()
         return self.create_chapter_from_string(content_string, url, title)
 
-    def create_chapter_from_string(self, html_string, url=None, title=None):
+    def create_chapter_from_string(self, html_string, url=None, title=None, request_object=None):
         """
         Creates a Chapter object from a string. Sanitizes the
         string using the clean_function method, and saves
@@ -288,13 +304,35 @@ class ChapterFactory(object):
             Chapter: A chapter object whose content is the given string
                 and whose title is that provided or inferred from the url
         """
+
+        if request_object:
+            request_object.encoding = 'utf-8'
+            html_string = request_object.text
+        elif not html_string: #if 404, request_object will None
+            html_string = '<html></html>'
+
         clean_html_string = self.clean_function(html_string)
         clean_xhtml_string = clean.html_to_xhtml(clean_html_string)
         if title:
             pass
         else:
             try:
-                root = BeautifulSoup(html_string, 'html.parser')
+
+                if request_object:
+
+                    root = BeautifulSoup(html_string, 'html.parser')
+                    meta_encoding = hole_meta_encoding(root)
+                    if meta_encoding and (meta_encoding.lower() != 'utf-8'):
+                        print('Encoding to meta encoding: ' + repr(meta_encoding))
+                        request_object.encoding = meta_encoding
+                        html_string = request_object.text
+                        root = BeautifulSoup(html_string, 'html.parser')
+                        clean_html_string = self.clean_function(html_string)
+                        clean_xhtml_string = clean.html_to_xhtml(clean_html_string)
+                    
+                else:
+                    root = BeautifulSoup(html_string, 'html.parser')
+
                 title_node = root.title
                 if title_node is not None:
                     title = unicode(title_node.string)

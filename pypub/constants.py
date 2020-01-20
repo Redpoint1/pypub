@@ -37,6 +37,9 @@ SUPPORTED_TAGS = {
     'strong': ['class', 'id'],
     'sub': ['id'],
     'sup': ['class', 'id'],
+    'table': ['width', 'cellspacing', 'cellpadding', 'border',  'align'], #hole
+    'td': ['width', 'height', 'bgcolor'], #hole
+    'tr': ['width', 'height', 'bgcolor'], #hole
     'u': ['id'],
     'ul': ['class', 'id'],
     'var': []
