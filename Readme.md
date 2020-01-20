@@ -1,7 +1,7 @@
 # Patch for python 3 #
 This fork just my quick patch to make pypub works without error in python 3. 
 
-5 files need to be changed, i.e. clean.py, epub.py, __init__.py, chapter.py (Also fixed images missing), constants.py (added "code", "figure", "pre", "style", "td/tr/table" tags)
+5 files need to be changed, i.e. clean.py, epub.py, __init__.py, chapter.py (Also fixed images missing), constants.py (added "code", "figure", "kbd", "pre", "samp", "style", "td/tr/table" tags)
 
 This fix is quick and may causes bug, please don't hesitate to open issue for any bug.  
 
