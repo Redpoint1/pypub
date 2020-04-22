@@ -1,4 +1,4 @@
-import cgi
+import html
 import codecs
 import imghdr
 import os
@@ -143,7 +143,7 @@ class Chapter(object):
         self.content = content
         self._content_tree = BeautifulSoup(self.content, 'html.parser')
         self.url = url
-        self.html_title = cgi.escape(self.title, quote=True)
+        self.html_title = html.escape(self.title, quote=True)
 
     def write(self, file_name):
         """
