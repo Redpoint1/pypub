@@ -52,3 +52,6 @@ docs/build/
 
 #intellij
 .idea/
+
+#vscode
+.vscode
