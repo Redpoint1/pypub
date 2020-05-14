@@ -21,7 +21,7 @@ except ImportError:
     lxml_module_exists = False
 
 import chapter
-import constants as EPUB_TEMPLATES_DIR
+from constants import EPUB_TEMPLATES_DIR
 
 requests.packages.urllib3.disable_warnings()
 
@@ -58,7 +58,7 @@ class _EpubFile(object):
     def _render_template(self, **variable_value_pairs):
         def read_template():
             with open(self.template_file, 'r') as f:
-                template = f.read().decode('utf-8')
+                template = f.read()
             return jinja2.Template(template)
         template = read_template()
         rendered_template = template.render(variable_value_pairs)
@@ -68,7 +68,7 @@ class _EpubFile(object):
         def check_list_lengths(lists):
             list_length = None
             for value in lists.values():
-                assert isinstance(value, list)
+                assert isinstance(value, (list, range))
                 if list_length is None:
                     list_length = len(value)
                 else:

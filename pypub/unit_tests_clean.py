@@ -13,7 +13,7 @@ class CleanTests(unittest.TestCase):
         pass
 
     def test_clean_empty_img(self):
-        s = u'''
+        s = '''
                 <!DOCTYPE html>
                 <html>
                  <head>
@@ -23,7 +23,7 @@ class CleanTests(unittest.TestCase):
                  </body>
                 </html>
                 '''
-        s1 = u'''
+        s1 = '''
                 <!DOCTYPE html>
                 <html>
                  <head>
@@ -141,7 +141,7 @@ class CleanTests(unittest.TestCase):
             '<head></head><body><div id="Test">Hello</div><br /><br />'
             '</body></html>'
         )
-        s1 = u'''
+        s1 = '''
                 <!DOCTYPE html>
                 <html>
                  <head>
@@ -158,7 +158,7 @@ class CleanTests(unittest.TestCase):
     def test_create_html_from_fragment(self):
         test_tag1 = BeautifulSoup('<div></div>', 'html.parser').div
         test_tree1 = create_html_from_fragment(test_tag1)
-        self.assertEqual(test_tree1,
+        self.assertEqual(str(test_tree1),
                          '<html><head></head><body><div></div></body></html>')
         self.assertRaises(TypeError, create_html_from_fragment, '')
         self.assertRaises(ValueError, create_html_from_fragment, test_tree1)

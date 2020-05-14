@@ -17,7 +17,7 @@ class TestEpub(unittest.TestCase):
         self.chapter_list = []
         file_list = [f for f in os.listdir(
             chapter_dir) if os.path.isfile(os.path.join(chapter_dir, f))]
-        for index, f in enumerate(file_list):
+        for index, f in enumerate(sorted(file_list)):
             full_name = os.path.join(chapter_dir, f)
             c = chapter_factory.create_chapter_from_file(full_name)
             self.chapter_list.append(c)
@@ -26,7 +26,7 @@ class TestEpub(unittest.TestCase):
             u'Venture capital - Wikipedia, the free encyclopedia',
             u"Ben's Blog",
             (
-                u"The capture of Mosul: Terror\u2019s"
+                u"The capture of Mosul: Terror\u2019s "
                 u"new headquarters | The Economist"
             ),
         ]

@@ -5,7 +5,6 @@ import os
 import shutil
 import tempfile
 import urllib
-import urlparse
 import uuid
 
 import bs4
@@ -37,7 +36,7 @@ def get_image_type(url):
     else:
         try:
             f, temp_file_name = tempfile.mkstemp()
-            urllib.urlretrieve(url, temp_file_name)
+            urllib.request.urlretrieve(url, temp_file_name)
             image_type = imghdr.what(temp_file_name)
             return image_type
         except IOError:
@@ -199,7 +198,7 @@ class Chapter(object):
         image_nodes = self._content_tree.find_all('img')
         raw_image_urls = [node['src']
                           for node in image_nodes if node.has_attr('src')]
-        full_image_urls = [urlparse.urljoin(
+        full_image_urls = [urllib.parse.urljoin(
             self.url, image_url) for image_url in raw_image_urls]
         image_nodes_filtered = [
             node for node in image_nodes if node.has_attr('src')]
@@ -210,7 +209,8 @@ class Chapter(object):
         for image_tag, image_url in image_url_list:
             _replace_image(image_url, image_tag, ebook_folder)
         unformatted_html_unicode_string = self._content_tree.prettify(
-            encoding='utf-8', formatter=EntitySubstitution.substitute_html)
+            formatter=EntitySubstitution.substitute_html
+        )
         self.content = unformatted_html_unicode_string.replace('<br>', '<br/>')
 
 

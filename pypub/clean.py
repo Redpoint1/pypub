@@ -24,15 +24,16 @@ def create_html_from_fragment(tag):
         assert isinstance(tag, bs4.element.Tag)
     except AssertionError:
         raise TypeError
+    try:
+        assert tag.find_all('body') == []
+    except AssertionError:
+        raise ValueError
 
-    if tag.find_all('body') == []:
-        soup = BeautifulSoup(
-            '<html><head></head><body></body></html>', 'html.parser')
-        soup.body.append(tag)
-    else:
-        soup = BeautifulSoup('<html></html>', 'html.parser')
-        soup.html.append(tag)
-
+    soup = BeautifulSoup(
+        '<html><head></head><body></body></html>',
+        'html.parser'
+    )
+    soup.body.append(tag)
     return soup
 
 
@@ -77,7 +78,7 @@ def clean(input_string,
                 parent_node.append(n)
         else:
             attribute_dict = current_node.attrs
-            for attribute in attribute_dict.keys():
+            for attribute in attribute_dict.copy().keys():
                 if attribute not in tag_dictionary[current_node.name]:
                     attribute_dict.pop(attribute)
         stack.extend(child_node_list)
@@ -90,7 +91,6 @@ def clean(input_string,
         if not node.has_attr('src'):
             node.extract()
     unformatted_html_unicode_string = root.prettify(
-        encoding='utf-8',
         formatter=EntitySubstitution.substitute_html
     )
     # fix <br> tags since not handled well by default by bs4
@@ -152,9 +152,7 @@ def html_to_xhtml(html_unicode_string):
                                   'string is the following: %s', root]))
     # Add xmlns attribute to html node
     root.html['xmlns'] = 'http://www.w3.org/1999/xhtml'
-    unicode_string = root.prettify(
-        encoding='utf-8', formatter='html'
-    )
+    unicode_string = root.prettify(formatter='html')
     # Close singleton tag_dictionary
     for tag in constants.SINGLETON_TAG_LIST:
         unicode_string = unicode_string.replace(
