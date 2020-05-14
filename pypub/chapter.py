@@ -70,7 +70,7 @@ def save_image(image_url, image_directory, image_name):
     try:
         # urllib.urlretrieve(image_url, full_image_file_name)
         with open(full_image_file_name, 'wb') as f:
-            user_agent = r'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/31.0'
+            user_agent = r'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:76.0) Gecko/20100101 Firefox/76.0'
             request_headers = {'User-Agent': user_agent}
             requests_object = requests.get(image_url, headers=request_headers)
             try:
