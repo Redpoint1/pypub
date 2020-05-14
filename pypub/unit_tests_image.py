@@ -15,14 +15,22 @@ class ChapterTests(unittest.TestCase):
         self.test_image_list = []
 
     def test_save_image(self):
-        image_url_list = ['http://www.fangraphs.com/images/247_90_fangraphs.png',
-                          'http://bothsides.wpengine.netdna-cdn.com/wp-content/uploads/2015/11/bothsides1.jpg']
+        image_url_list = [
+            'http://www.fangraphs.com/images/247_90_fangraphs.png',
+            (
+                'http://bothsides.wpengine.netdna-cdn.com'
+                '/wp-content/uploads/2015/11/bothsides1.jpg'
+            )
+        ]
         image_type_list = ['png',
                            'jpg']
         for index, image in enumerate(image_url_list):
-            self.assertEqual(chapter.save_image(image_url_list[index], test_directory,
-                                                'test image ' + str(index)),
-                             image_type_list[index])
+            self.assertEqual(
+                chapter.save_image(image_url_list[index],
+                                   test_directory,
+                                   'test image ' + str(index)
+                                   ),
+                image_type_list[index])
 
     def test_save_image_error(self):
         self.assertRaises(chapter.ImageErrorException,
@@ -38,7 +46,8 @@ class ChapterTests(unittest.TestCase):
         test_url_2 = 'http://williamcember.com'
         test_chapter_2 = chapter.create_chapter_from_url(test_url_2)
         test_image_list_2 = self.test_image_list
-        image_url_list_2_calced = [t[1] for t in test_chapter_2._get_image_urls()]
+        image_url_list_2_calced = [t[1]
+                                   for t in test_chapter_2._get_image_urls()]
         self.assertEqual(image_url_list_2_calced, test_image_list_2)
 
     def test_replace_image(self):
@@ -47,7 +56,6 @@ class ChapterTests(unittest.TestCase):
         c = chapter.create_chapter_from_url(test_url)
         c._replace_images_in_chapter(test_ebook_dir)
         c.write(os.path.join(test_directory, 'test_cember.xhtml'))
-
 
 
 if __name__ == '__main__':

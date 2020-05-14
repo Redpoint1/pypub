@@ -46,8 +46,9 @@ def get_image_type(url):
 
 def save_image(image_url, image_directory, image_name):
     """
-    Saves an online image from image_url to image_directory with the name image_name.
-    Returns the extension of the image saved, which is determined dynamically.
+    Saves an online image from image_url to image_directory with the name
+    image_name. Returns the extension of the image saved, which is determined
+    dynamically.
 
     Args:
         image_url (str): The url of the image.
@@ -60,7 +61,8 @@ def save_image(image_url, image_directory, image_name):
     image_type = get_image_type(image_url)
     if image_type is None:
         raise ImageErrorException(image_url)
-    full_image_file_name = os.path.join(image_directory, image_name + '.' + image_type)
+    full_image_file_name = os.path.join(
+        image_directory, image_name + '.' + image_type)
 
     # If the image is present on the local filesystem just copy it
     if os.path.exists(image_url):
@@ -70,7 +72,10 @@ def save_image(image_url, image_directory, image_name):
     try:
         # urllib.urlretrieve(image_url, full_image_file_name)
         with open(full_image_file_name, 'wb') as f:
-            user_agent = r'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:76.0) Gecko/20100101 Firefox/76.0'
+            user_agent = (
+                'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:76.0) '
+                'Gecko/20100101 Firefox/76.0'
+            )
             request_headers = {'User-Agent': user_agent}
             requests_object = requests.get(image_url, headers=request_headers)
             try:
@@ -87,15 +92,17 @@ def save_image(image_url, image_directory, image_name):
 def _replace_image(image_url, image_tag, ebook_folder,
                    image_name=None):
     """
-    Replaces the src of an image to link to the local copy in the images folder of the ebook. Tightly coupled with bs4
+    Replaces the src of an image to link to the local copy in the images
+    folder of the ebook. Tightly coupled with bs4
         package.
 
     Args:
         image_url (str): The url of the image.
         image_tag (bs4.element.Tag): The bs4 tag containing the image.
-        ebook_folder (str): The directory where the ebook files are being saved. This must contain a subdirectory
-            called "images".
-        image_name (Option[str]): The short name to save the image as. Should not contain a directory or an extension.
+        ebook_folder (str): The directory where the ebook files are being
+        saved. This must contain a subdirectorycalled "images".
+        image_name (Option[str]): The short name to save the image as. Should
+        not contain a directory or an extension.
     """
     try:
         assert isinstance(image_tag, bs4.element.Tag)
@@ -112,7 +119,10 @@ def _replace_image(image_url, image_tag, ebook_folder,
     except ImageErrorException:
         image_tag.decompose()
     except AssertionError:
-        raise ValueError('%s doesn\'t exist or doesn\'t contain a subdirectory images' % ebook_folder)
+        raise ValueError(
+            '%s doesn\'t exist or doesn\'t contain a subdirectory images'
+            % ebook_folder
+        )
     except TypeError:
         image_tag.decompose()
 
@@ -138,6 +148,7 @@ class Chapter(object):
         html_title (str): Title string with special characters replaced with
             html-safe sequences
     """
+
     def __init__(self, content, title, url=None):
         self._validate_input_types(content, title)
         self.title = title
@@ -162,11 +173,11 @@ class Chapter(object):
 
     def _validate_input_types(self, content, title):
         try:
-            assert isinstance(content, basestring)
+            assert isinstance(content, str)
         except AssertionError:
             raise TypeError('content must be a string')
         try:
-            assert isinstance(title, basestring)
+            assert isinstance(title, str)
         except AssertionError:
             raise TypeError('title must be a string')
         try:
@@ -186,20 +197,21 @@ class Chapter(object):
 
     def _get_image_urls(self):
         image_nodes = self._content_tree.find_all('img')
-        raw_image_urls = [node['src'] for node in image_nodes if node.has_attr('src')]
-        full_image_urls = [urlparse.urljoin(self.url, image_url) for image_url in raw_image_urls]
-        image_nodes_filtered = [node for node in image_nodes if node.has_attr('src')]
+        raw_image_urls = [node['src']
+                          for node in image_nodes if node.has_attr('src')]
+        full_image_urls = [urlparse.urljoin(
+            self.url, image_url) for image_url in raw_image_urls]
+        image_nodes_filtered = [
+            node for node in image_nodes if node.has_attr('src')]
         return zip(image_nodes_filtered, full_image_urls)
 
     def _replace_images_in_chapter(self, ebook_folder):
         image_url_list = self._get_image_urls()
         for image_tag, image_url in image_url_list:
             _replace_image(image_url, image_tag, ebook_folder)
-        unformatted_html_unicode_string = unicode(self._content_tree.prettify(encoding='utf-8',
-                                                                              formatter=EntitySubstitution.substitute_html),
-                                                  encoding='utf-8')
-        unformatted_html_unicode_string = unformatted_html_unicode_string.replace('<br>', '<br/>')
-        self.content = unformatted_html_unicode_string
+        unformatted_html_unicode_string = self._content_tree.prettify(
+            encoding='utf-8', formatter=EntitySubstitution.substitute_html)
+        self.content = unformatted_html_unicode_string.replace('<br>', '<br/>')
 
 
 class ChapterFactory(object):
@@ -215,8 +227,10 @@ class ChapterFactory(object):
 
     def __init__(self, clean_function=clean.clean):
         self.clean_function = clean_function
-        #UA causes too old web browser page, e.g. https://huanlan.zhihu.com/p/12345
-        user_agent = r'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20100101 Firefox/1000000.0'
+        user_agent = (
+            'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:73.0) '
+            'Gecko/20100101 Firefox/73.0'
+        )
         self.request_headers = {'User-Agent': user_agent}
 
     def create_chapter_from_url(self, url, title=None):
@@ -241,10 +255,12 @@ class ChapterFactory(object):
             ValueError: Raised if unable to connect to url supplied
         """
         try:
-            request_object = requests.get(url, headers=self.request_headers, allow_redirects=False)
+            request_object = requests.get(
+                url, headers=self.request_headers, allow_redirects=False)
         except (requests.exceptions.MissingSchema,
                 requests.exceptions.ConnectionError):
-            raise ValueError("%s is an invalid url or no network connection" % url)
+            raise ValueError(
+                "%s is an invalid url or no network connection" % url)
         except requests.exceptions.SSLError:
             raise ValueError("Url %s doesn't have valid SSL certificate" % url)
         unicode_string = request_object.text
@@ -299,12 +315,13 @@ class ChapterFactory(object):
                 root = BeautifulSoup(html_string, 'html.parser')
                 title_node = root.title
                 if title_node is not None:
-                    title = unicode(title_node.string)
+                    title = title_node.string
                 else:
                     raise ValueError
             except (IndexError, ValueError):
                 title = 'Ebook Chapter'
         return Chapter(clean_xhtml_string, title, url)
+
 
 create_chapter_from_url = ChapterFactory().create_chapter_from_url
 create_chapter_from_file = ChapterFactory().create_chapter_from_file

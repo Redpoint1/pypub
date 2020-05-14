@@ -1,5 +1,3 @@
-import re
-
 import unittest
 
 from bs4 import BeautifulSoup
@@ -40,9 +38,21 @@ class CleanTests(unittest.TestCase):
         self.assertEqual(condense(clean(s1)), condense(clean(s)))
 
     def test_clean_with_article(self):
-        s = '<html><head></head><body><article>Hello! I am a test</article></body></html>'
-        s1 = '<html><head></head><body><div>dsfasfadfasdfasdf</div><article>Hello! I am a test</article></body></html>'
-        s2 = '<html><head></head><body><article><video></video>Hello! I am a test</article></body></html>'
+        s = (
+            '<html><head></head><body><article>'
+            'Hello! I am a test'
+            '</article></body></html>'
+        )
+        s1 = (
+            '<html><head></head><body>'
+            '<div>dsfasfadfasdfasdf</div><article>Hello! I am a test</article>'
+            '</body></html>'
+        )
+        s2 = (
+            '<html><head></head><body><article><video></video>'
+            'Hello! I am a test'
+            '</article></body></html>'
+        )
         self.assertEqual(condense(clean(s)), condense(s))
         self.assertEqual(condense(clean(s1)), condense(s))
         self.assertEqual(condense(clean(s2)), condense(s))
@@ -126,7 +136,11 @@ class CleanTests(unittest.TestCase):
         self.assertEqual(condense(clean(s5)), condense(s))
 
     def test_html_to_xhtml(self):
-        s = u'<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head></head><body><div id="Test">Hello</div><br /><br /></body></html>'
+        s = (
+            '<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml">'
+            '<head></head><body><div id="Test">Hello</div><br /><br />'
+            '</body></html>'
+        )
         s1 = u'''
                 <!DOCTYPE html>
                 <html>
@@ -144,7 +158,8 @@ class CleanTests(unittest.TestCase):
     def test_create_html_from_fragment(self):
         test_tag1 = BeautifulSoup('<div></div>', 'html.parser').div
         test_tree1 = create_html_from_fragment(test_tag1)
-        self.assertEqual(unicode(test_tree1), '<html><head></head><body><div></div></body></html>')
+        self.assertEqual(test_tree1,
+                         '<html><head></head><body><div></div></body></html>')
         self.assertRaises(TypeError, create_html_from_fragment, '')
         self.assertRaises(ValueError, create_html_from_fragment, test_tree1)
 

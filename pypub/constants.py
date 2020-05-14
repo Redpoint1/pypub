@@ -28,25 +28,25 @@ SUPPORTED_TAGS = {
     'i': ['class', 'id'],
     'img': ['align', 'border', 'height', 'id', 'src', 'width'],
     'img /': ['align', 'border', 'height', 'id', 'src', 'width'],
-    'kbd': [], #hole, https://www.crummy.com/software/BeautifulSoup/bs3/documentation.html#Parsing%20HTML 
+    'kbd': [],
     'li': ['class', 'id', 'title'],
     'ol': ['id'],
     'p': ['align', 'id', 'title'],
     's': ['id', 'style', 'title'],
-    'samp': [], #hole, https://www.crummy.com/software/BeautifulSoup/bs3/documentation.html#Parsing%20HTML
+    'samp': [],
     'small': ['id'],
     'span': ['bgcolor', 'title'],
     'strike': ['class', 'id'],
     'strong': ['class', 'id'],
     'sub': ['id'],
     'sup': ['class', 'id'],
-    'table': ['width', 'cellspacing', 'cellpadding', 'border',  'align'], #hole
-    'td': ['width', 'height', 'bgcolor'], #hole
-    'tr': ['width', 'height', 'bgcolor'], #hole
+    'table': ['width', 'cellspacing', 'cellpadding', 'border',  'align'],
+    'td': ['width', 'height', 'bgcolor'],
+    'tr': ['width', 'height', 'bgcolor'],
     'u': ['id'],
     'ul': ['class', 'id'],
     'var': []
-    }
+}
 SINGLETON_TAG_LIST = [
     'area',
     'base',
@@ -61,8 +61,19 @@ SINGLETON_TAG_LIST = [
     'meta',
     'param',
     'source',
-    ]
-xhtml_doctype_string = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
+]
+xhtml_doctype_string = (
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" '
+        '"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">'
+    )
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 TEST_DIR = os.path.join(BASE_DIR, 'test_files')
 EPUB_TEMPLATES_DIR = os.path.join(BASE_DIR, 'epub_templates')
+
+__all__ = (
+    SUPPORTED_TAGS,
+    SINGLETON_TAG_LIST,
+    BASE_DIR,
+    TEST_DIR,
+    EPUB_TEMPLATES_DIR
+)

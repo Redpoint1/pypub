@@ -1,5 +1,6 @@
 import collections
 import imp
+import os
 import random
 import string
 import shutil
@@ -19,8 +20,8 @@ try:
 except ImportError:
     lxml_module_exists = False
 
-from constants import *
 import chapter
+import constants as EPUB_TEMPLATES_DIR
 
 requests.packages.urllib3.disable_warnings()
 
@@ -75,7 +76,8 @@ class _EpubFile(object):
         check_list_lengths(parameter_lists)
         template_chapter = collections.namedtuple('template_chapter',
                                                   parameter_lists.keys())
-        chapters = [template_chapter(*items) for items in zip(*parameter_lists.values())]
+        chapters = [template_chapter(*items)
+                    for items in zip(*parameter_lists.values())]
         self._render_template(chapters=chapters, **self.non_chapter_parameters)
 
     def get_content(self):
@@ -84,7 +86,9 @@ class _EpubFile(object):
 
 class TocHtml(_EpubFile):
 
-    def __init__(self, template_file=os.path.join(EPUB_TEMPLATES_DIR, 'toc.html'), **non_chapter_parameters):
+    def __init__(self, template_file=None, **non_chapter_parameters):
+        if template_file is None:
+            template_file = os.path.join(EPUB_TEMPLATES_DIR, 'toc.html')
         super(TocHtml, self).__init__(template_file, **non_chapter_parameters)
 
     def add_chapters(self, chapter_list):
@@ -136,20 +140,26 @@ class TocNcx(_EpubFile):
 
 class ContentOpf(_EpubFile):
 
-    def __init__(self, title, creator='', language='', rights='', publisher='', uid='', date=time.strftime("%m-%d-%Y")):
-        super(ContentOpf, self).__init__(os.path.join(EPUB_TEMPLATES_DIR, 'opf.xml'),
-                                         title=title,
-                                         creator=creator,
-                                         language=language,
-                                         rights=rights,
-                                         publisher=publisher,
-                                         uid=uid,
-                                         date=date)
+    def __init__(self, title, creator='', language='', rights='', publisher='',
+                 uid='', date=None):
+        if date is None:
+            date = time.strftime("%m-%d-%Y")
+        super(ContentOpf, self).__init__(
+            os.path.join(EPUB_TEMPLATES_DIR, 'opf.xml'),
+            title=title,
+            creator=creator,
+            language=language,
+            rights=rights,
+            publisher=publisher,
+            uid=uid,
+            date=date
+        )
 
     def add_chapters(self, chapter_list):
         id_list = range(len(chapter_list))
         link_list = [str(n) + '.xhtml' for n in id_list]
-        super(ContentOpf, self).add_chapters(**{'id': id_list, 'link': link_list})
+        super(ContentOpf, self).add_chapters(
+            **{'id': id_list, 'link': link_list})
 
     def get_content_as_element(self):
         if lxml_module_exists:
@@ -174,7 +184,8 @@ class Epub(object):
             is pypub.
     """
 
-    def __init__(self, title, creator='pypub', language='en', rights='', publisher='pypub', epub_dir=None):
+    def __init__(self, title, creator='pypub', language='en', rights='',
+                 publisher='pypub', epub_dir=None):
         self._create_directories(epub_dir)
         self.chapters = []
         self.title = title
@@ -186,12 +197,20 @@ class Epub(object):
         self.language = language
         self.rights = rights
         self.publisher = publisher
-        self.uid = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(12))
+        self.uid = ''.join(random.choice(
+            string.ascii_uppercase + string.digits) for _ in range(12))
         self.current_chapter_number = None
         self._increase_current_chapter_number()
         self.toc_html = TocHtml()
         self.toc_ncx = TocNcx()
-        self.opf = ContentOpf(self.title, self.creator, self.language, self.rights, self.publisher, self.uid)
+        self.opf = ContentOpf(
+            self.title,
+            self.creator,
+            self.language,
+            self.rights,
+            self.publisher,
+            self.uid
+        )
         self.minetype = _Minetype(self.EPUB_DIR)
         self.container = _ContainerFile(self.META_INF_DIR)
 
@@ -214,7 +233,8 @@ class Epub(object):
         else:
             self.current_chapter_number += 1
         self.current_chapter_id = str(self.current_chapter_number)
-        self.current_chapter_path = ''.join([self.current_chapter_id, '.xhtml'])
+        self.current_chapter_path = ''.join(
+            [self.current_chapter_id, '.xhtml'])
 
     def add_chapter(self, c):
         """
@@ -231,7 +251,8 @@ class Epub(object):
             assert type(c) == chapter.Chapter
         except AssertionError:
             raise TypeError('chapter must be of type Chapter')
-        chapter_file_output = os.path.join(self.OEBPS_DIR, self.current_chapter_path)
+        chapter_file_output = os.path.join(
+            self.OEBPS_DIR, self.current_chapter_path)
         c._replace_images_in_chapter(self.OEBPS_DIR)
         c.write(chapter_file_output)
         self._increase_current_chapter_number()
@@ -243,22 +264,32 @@ class Epub(object):
 
         Args:
             output_directory (str): Directory to output the epub file to
-            epub_name (Option[str]): The file name of your epub. This should not contain
-                .epub at the end. If this argument is not provided, defaults to the title of the epub.
+            epub_name (Option[str]): The file name of your epub. This should
+                not contain .epub at the end. If this argument is not provided,
+                defaults to the title of the epub.
         """
         def createTOCs_and_ContentOPF():
-            for epub_file, name in ((self.toc_html, 'toc.html'), (self.toc_ncx, 'toc.ncx'), (self.opf, 'content.opf'),):
+            files = (
+                (self.toc_html, 'toc.html'),
+                (self.toc_ncx, 'toc.ncx'),
+                (self.opf, 'content.opf'),
+            )
+
+            for epub_file, name in files:
                 epub_file.add_chapters(self.chapters)
                 epub_file.write(os.path.join(self.OEBPS_DIR, name))
 
         def create_zip_archive(epub_name):
             try:
-                assert isinstance(epub_name, basestring) or epub_name is None
+                assert isinstance(epub_name, str) or epub_name is None
             except AssertionError:
                 raise TypeError('epub_name must be string or None')
             if epub_name is None:
                 epub_name = self.title
-            epub_name = ''.join([c for c in epub_name if c.isalpha() or c.isdigit() or c == ' ']).rstrip()
+            epub_name = [
+                c for c in epub_name if c.isalpha() or c.isdigit() or c == ' '
+            ]
+            epub_name = ''.join(epub_name).rstrip()
             epub_name_with_path = os.path.join(output_directory, epub_name)
             try:
                 os.remove(os.path.join(epub_name_with_path, '.zip'))

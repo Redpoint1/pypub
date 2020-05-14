@@ -10,7 +10,8 @@ import constants
 
 def create_html_from_fragment(tag):
     """
-    Creates full html tree from a fragment. Assumes that tag should be wrapped in a body and is currently not
+    Creates full html tree from a fragment. Assumes that tag should be wrapped
+    in a body and is currently not
 
     Args:
         tag: a bs4.element.Tag
@@ -24,14 +25,9 @@ def create_html_from_fragment(tag):
     except AssertionError:
         raise TypeError
 
-    #try:
-    #    # hole: this is wrong bcoz web browser will auto replace first </html>(if only 2 </html>) with <html>, while <body> still appear.
-    #e.g. http://slae.tehwinsam.com/7/assignment7.html
-    #    assert tag.find_all('body') == []
-    #except AssertionError:
-    #    raise ValueError
     if tag.find_all('body') == []:
-        soup = BeautifulSoup('<html><head></head><body></body></html>', 'html.parser')
+        soup = BeautifulSoup(
+            '<html><head></head><body></body></html>', 'html.parser')
         soup.body.append(tag)
     else:
         soup = BeautifulSoup('<html></html>', 'html.parser')
@@ -49,7 +45,7 @@ def clean(input_string,
     Doctype is set to <!DOCTYPE html>.
 
     Args:
-        input_string (basestring): A (possibly unicode) string representing HTML.
+        input_string (str): A (possibly unicode) string representing HTML.
         tag_dictionary (Option[dict]): A dictionary with tags as keys and
             attributes as values. This operates as a whitelist--i.e. if a tag
             isn't contained, it will be removed. By default, this is set to
@@ -63,7 +59,7 @@ def clean(input_string,
         TypeError: Raised if input_string isn't a unicode string or string.
     """
     try:
-        assert isinstance(input_string, basestring)
+        assert isinstance(input_string, str)
     except AssertionError:
         raise TypeError
     root = BeautifulSoup(input_string, 'html.parser')
@@ -85,7 +81,7 @@ def clean(input_string,
                 if attribute not in tag_dictionary[current_node.name]:
                     attribute_dict.pop(attribute)
         stack.extend(child_node_list)
-    #wrap partial tree if necessary
+    # wrap partial tree if necessary
     if root.find_all('html') == []:
         root = create_html_from_fragment(root)
     # Remove img tags without src attribute
@@ -93,13 +89,16 @@ def clean(input_string,
     for node in image_node_list:
         if not node.has_attr('src'):
             node.extract()
-    unformatted_html_unicode_string = unicode(root.prettify(encoding='utf-8',
-                                                            formatter=EntitySubstitution.substitute_html),
-                                              encoding='utf-8')
+    unformatted_html_unicode_string = root.prettify(
+        encoding='utf-8',
+        formatter=EntitySubstitution.substitute_html
+    )
     # fix <br> tags since not handled well by default by bs4
-    unformatted_html_unicode_string = unformatted_html_unicode_string.replace('<br>', '<br/>')
-    # remove &nbsp; and replace with space since not handled well by certain e-readers
-    unformatted_html_unicode_string = unformatted_html_unicode_string.replace('&nbsp;', ' ')
+    unformatted_html_unicode_string = unformatted_html_unicode_string.replace(
+        '<br>', '<br/>')
+    # replace &nbsp; with space since is not handled well by certain e-readers
+    unformatted_html_unicode_string = unformatted_html_unicode_string.replace(
+        '&nbsp;', ' ')
     return unformatted_html_unicode_string
 
 
@@ -117,11 +116,13 @@ def condense(input_string):
         TypeError: Raised if input_string isn't a unicode string or string.
     """
     try:
-        assert isinstance(input_string, basestring)
+        assert isinstance(input_string, str)
     except AssertionError:
         raise TypeError
-    removed_leading_whitespace = re.sub('>\s+', '>', input_string).strip()
-    removed_trailing_whitespace = re.sub('\s+<', '<', removed_leading_whitespace).strip()
+    removed_leading_whitespace = re.sub(r'>\s+', '>', input_string).strip()
+    removed_trailing_whitespace = re.sub(
+        r'\s+<', '<', removed_leading_whitespace
+    ).strip()
     return removed_trailing_whitespace
 
 
@@ -139,7 +140,7 @@ def html_to_xhtml(html_unicode_string):
         TypeError: Raised if input_string isn't a unicode string or string.
     """
     try:
-        assert isinstance(html_unicode_string, basestring)
+        assert isinstance(html_unicode_string, str)
     except AssertionError:
         raise TypeError
     root = BeautifulSoup(html_unicode_string, 'html.parser')
@@ -148,13 +149,15 @@ def html_to_xhtml(html_unicode_string):
         assert root.html is not None
     except AssertionError:
         raise ValueError(''.join(['html_unicode_string cannot be a fragment.',
-                         'string is the following: %s', unicode(root)]))
+                                  'string is the following: %s', root]))
     # Add xmlns attribute to html node
     root.html['xmlns'] = 'http://www.w3.org/1999/xhtml'
-    unicode_string = unicode(root.prettify(encoding='utf-8', formatter='html'), encoding='utf-8')
+    unicode_string = root.prettify(
+        encoding='utf-8', formatter='html'
+    )
     # Close singleton tag_dictionary
     for tag in constants.SINGLETON_TAG_LIST:
         unicode_string = unicode_string.replace(
-                '<' + tag + '/>',
-                '<' + tag + ' />')
+            '<' + tag + '/>',
+            '<' + tag + ' />')
     return unicode_string
