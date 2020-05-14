@@ -16,6 +16,7 @@ SUPPORTED_TAGS = {
     'em': ['id', 'title'],
     'font': ['color', 'face', 'id', 'size'],
     'head': [],
+    'header': [],
     'h1': [],
     'h2': [],
     'h3': [],
